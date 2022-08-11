@@ -22,6 +22,7 @@
 int wlPin = A2; // датчик уровня воды
 float water_level;
 float water_level_percent = 0.0;
+float temp_on = 28.0;
 //почва
 int rainPin = A1; // пин датчика влажности почвы
 float g_h; //значения влажности почвы
@@ -40,7 +41,7 @@ int HUM_MIN = 30; // пороговое значение указывается 
 int LEVEL_MIN = 20;
 //В этой переменной будем хранить временной промежуток
 unsigned long time_copter = 0;
-unsigned int diff_mm = 0;
+unsigned int vent_state = 0;
 unsigned int diff_ss = 0;
 bool state_in = false;
 bool state_out = false;
@@ -131,17 +132,23 @@ void copter_drive(float temp, String _time)
   int hh = _time.substring(0,2).toInt();
   int mm = _time.substring(3,5).toInt();
   int ss = _time.substring(6,8).toInt();
-  if (((temp >= 28.0) || (mm <= 15) || ((mm >= 30) && (mm < 45))) )   //((diff_mm == 0) && (diff_ss==0) || ((mm - diff_mm>= 0) && (ss - diff_ss>= 59) )&& 
-  {
+  float _delta = random(275, 280) / 10;
+  float delta_ = random(280, 285) / 10;
+  if (((mm <= 15) || ((mm >= 30) && (mm < 45))) )   //((diff_mm == 0) && (diff_ss==0) || ((mm - diff_mm>= 0) && (ss - diff_ss>= 59) )&& 
+    { 
     digitalWrite(COPTER_PIN, LOW);
-  }
+    }
+  if (((temp >= temp_on) && ((mm >= 15) && (mm < 30)) || (mm >= 45) ) ) 
+    {
+    // включаем вентиллятор и меняем границу из случайного диапазона 27.5 - 27.9
+    digitalWrite(COPTER_PIN, LOW);
+    temp_on = _delta;
+    }
   else {
     // Завершаем работу
     digitalWrite(COPTER_PIN, HIGH);
-    diff_mm = mm;
-    diff_ss = ss;
-    
-  }
+    temp_on = delta_;
+       }
 }
 
 void copter_in(float temp, String _time)
